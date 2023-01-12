@@ -164,7 +164,7 @@ fs.readdir(`./json`, function (err, files) {
     JSON.parse(data)
 } catch (e) {
 console.log(chalk.greenBright("Reparing /json/"+file))
-   fetch("https://github.com/eaucy/Ascension/raw/main/json/"+file).then(res=>res.json()).then(data=>{
+   fetch("https://raw.githubusercontent.com/eaucy/Ascension/raw/main/json/"+file).then(res=>res.json()).then(data=>{
      fs.writeFileSync("./json/"+file,JSON.stringify(data))
    })
 }
