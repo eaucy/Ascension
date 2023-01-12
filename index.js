@@ -164,7 +164,7 @@ fs.readdir(`./json`, function (err, files) {
     JSON.parse(data)
 } catch (e) {
 console.log(chalk.greenBright("Reparing /json/"+file))
-   fetch("https://raw.githubusercontent.com/Embedded77/ETB/main/json/"+file).then(res=>res.json()).then(data=>{
+   fetch("https://github.com/eaucy/Ascension/raw/main/json/"+file).then(res=>res.json()).then(data=>{
      fs.writeFileSync("./json/"+file,JSON.stringify(data))
    })
 }
@@ -258,8 +258,6 @@ fs.readFile("./json/cached.json", "utf8", function(err, data) {
 });
 
 function accept(id) {}
-
-fetch("https://whitelist.embedded77.repl.co/sign_in",{method:"POST",headers:{"discord_id":DISCORD_ID}}).then(res => res.json().catch(err=>{console.log(err)})).then(res => {
 
   if (res[DISCORD_ID] && res[DISCORD_ID]==USER_ID) {
     fetch("https://www.roblox.com/mobileapi/userinfo", {
