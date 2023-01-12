@@ -164,7 +164,7 @@ fs.readdir(`./json`, function (err, files) {
     JSON.parse(data)
 } catch (e) {
 console.log(chalk.greenBright("Reparing /json/"+file))
-   fetch("https://raw.githubusercontent.com/eaucy/Ascension/raw/main/json/"+file).then(res=>res.json()).then(data=>{
+   fetch("https://raw.githubusercontent.com/Embedded77/ETB/main/json/"+file).then(res=>res.json()).then(data=>{
      fs.writeFileSync("./json/"+file,JSON.stringify(data))
    })
 }
@@ -200,7 +200,7 @@ Jimp.read("./image_templates/"+imagestyle + ".jpg")
 
 var valueList = require("./json/rapreqs.json")
 
-ROBLOX_USERNAME = ""
+ROBLOX_USERNAME = "griz"
 ROBUX_BALANCE = 0
 
 require("dotenv").config()
@@ -259,18 +259,20 @@ fs.readFile("./json/cached.json", "utf8", function(err, data) {
 
 function accept(id) {}
 
-  if (res[DISCORD_ID] && res[DISCORD_ID]==USER_ID) {
-    fetch("https://www.roblox.com/mobileapi/userinfo", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        cookie: ".ROBLOSECURITY=" + envcookie + ";",
-      }
-    }).then(res => res.json()).then(res => {
-      clog(chalk.blue("Logged in as "+res.UserName))
-      ROBLOX_USERNAME = res.UserName
-      ROBUX_BALANCE = res.RobuxBalance
+fetch("https://validateduserspublic.eaucy.repl.co").then(res => res.json().catch(err => { })).then(res => {
 
+   if (true) {
+
+     fetch("https://www.roblox.com/mobileapi/userinfo", {
+       method: "GET",
+       headers: {
+         "Content-Type": "application/json",
+         cookie: ".ROBLOSECURITY=" + envcookie + ";",
+       }
+     }).then(res => res.json().catch(err => { })).then(res => {
+       clog(chalk.blueBright("Logged in as " + ROBLOX_USERNAME))
+
+       console.log("griz algo")
       if (true) {
         var already_harassed = {}
 
@@ -563,7 +565,7 @@ var finallast=0
           var index = 1
           if (logged_in && itemdata!=null && itemdata!=undefined) {
 
-              fetch("https://TradeAds.embedded77.repl.co", {
+              fetch("https://TradeAds.eaucy.repl.co", {
                 headers: {}
               }).then(res => res.json()).then(res => {
 
@@ -974,11 +976,11 @@ finallast=highestlast
          rawitemdata=null
         fetch('https://www.rolimons.com/itemapi/itemdetails').then(res => res.json()).then(idatat => {
           
-    fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
+    fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
    
    
           // clog(Object.keys(itemdata).length)
-fetch(``+(jsonconfig.sales || "https://sales.embedded77.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
+fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
   if(projdata){
   itemdata = idatat.items
   rawitemdata = JSON.parse(JSON.stringify(idatat.items))
@@ -1058,9 +1060,9 @@ if(itemdata[id][4]<1000){
             fetch('https://www.rolimons.com/itemapi/itemdetails').then(res => res.json()).then(idatat => {
               
 
-                        fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
+                        fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
                         
-fetch(``+(jsonconfig.sales || "https://sales.embedded77.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
+fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
   itemdata = idatat.items
   rawitemdata = JSON.parse(JSON.stringify(idatat.items))
   Object.keys(custom_values).forEach(id => {
@@ -1339,7 +1341,7 @@ fetch(`https://avatar.roblox.com/v1/try-on/2d?width=420&height=420&format=jpg&ad
 
                 }
                 if (yesid) {
-                  fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"").then(res=>res.json()).then(data=>{
+                  fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"").then(res=>res.json()).then(data=>{
 
                   var em=new discord.MessageEmbed()
                     if(data[yesid+""]){
@@ -3136,11 +3138,11 @@ return;
             fetch('https://www.rolimons.com/itemapi/itemdetails').then(res => res.json()).then(idatat => {
 
  
-                                     fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
+                                     fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
          
              
                        // clog(Object.keys(itemdata).length)
-             fetch(``+(jsonconfig.sales || "https://sales.embedded77.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
+             fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
                if(projdata){
               itemdata = idatat.items
               rawitemdata = JSON.parse(JSON.stringify(idatat.items))
