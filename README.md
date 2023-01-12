@@ -3,6 +3,6 @@ Source code release, if you like to help with this bot, please create a pull req
 This is a free bot so please donoate to https://teamseas.org if you enjoyed it!
 
 If you wish, you can host the APIs yourself, this helps me to lower the cost of this free project.
-https://github.com/eaucy/ATB-Trade-Ads-API 
+Trade ADs API: https://github.com/eaucy/ATB-Trade-Ads-API 
 and
-https://github.com/eaucy/ATB-Sale-API
+Sales API: https://github.com/eaucy/ATB-Sale-API
