@@ -1,8 +1,11 @@
 
+
+whitelisted_projected={}
 const chalk=require("chalk")
 
 function powerSet(v)
 {
+
 	z=[]
 	v.forEach((x)=>{
 		z.push([x])
@@ -70,6 +73,8 @@ var testmode = jsonconfig.testmode
 var custom_values = jsonconfig.custom_values
   accept_ratio=jsonconfig.accept_ratio
 var USER_ID = jsonconfig.USER_ID
+var plugger9000_enabled = jsonconfig.plugger9000_enabled
+var avoid_devpois_like_the_fucking_plague = jsonconfig.avoid_devpois_like_the_fucking_plague
 var stop_on_completed = jsonconfig.stop_on_completed
 var selfeval = jsonconfig.selfeval
 var ratio =jsonconfig.ratio
@@ -129,9 +134,9 @@ function createWindow () {
     width: 1200,
     height: 900,
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      enableRemoteModule: false,
+      nodeIntegration: false, // is default value after Electron v5
+      contextIsolation: true, // protect against prototype pollution
+      enableRemoteModule: false, // turn off remote
       preload: path.join(__dirname, 'preload.js')
     }
   })
@@ -200,7 +205,7 @@ Jimp.read("./image_templates/"+imagestyle + ".jpg")
 
 var valueList = require("./json/rapreqs.json")
 
-ROBLOX_USERNAME = "griz"
+ROBLOX_USERNAME = ""
 ROBUX_BALANCE = 0
 
 require("dotenv").config()
@@ -259,20 +264,18 @@ fs.readFile("./json/cached.json", "utf8", function(err, data) {
 
 function accept(id) {}
 
-fetch("https://validateduserspublic.eaucy.repl.co").then(res => res.json().catch(err => { })).then(res => {
+  if (true) {
+    fetch("https://www.roblox.com/mobileapi/userinfo", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: ".ROBLOSECURITY=" + envcookie + ";",
+      }
+    }).then(res => res.json()).then(res => {
+      clog(chalk.blue("Logged in as "+res.UserName))
+      ROBLOX_USERNAME = res.UserName
+      ROBUX_BALANCE = res.RobuxBalance
 
-   if (true) {
-
-     fetch("https://www.roblox.com/mobileapi/userinfo", {
-       method: "GET",
-       headers: {
-         "Content-Type": "application/json",
-         cookie: ".ROBLOSECURITY=" + envcookie + ";",
-       }
-     }).then(res => res.json().catch(err => { })).then(res => {
-       clog(chalk.blueBright("Logged in as " + ROBLOX_USERNAME))
-
-       console.log("griz algo")
       if (true) {
         var already_harassed = {}
 
@@ -361,7 +364,10 @@ fetch("https://validateduserspublic.eaucy.repl.co").then(res => res.json().catch
             }, autoregeninterval)
             }
             setTimeout(function() {
-              fetch(`https://inventory.roblox.com/v1/users/${USER_ID}/assets/collectibles?limit=100`, {
+              Object.keys(projected).forEach(x=>{
+                DONOTGET[x]=true
+              })
+              fetch(`https://inventory.roblox.com/v1/users/${USER_ID}/assets/collectibles?limit=10`, {
                 method: "GET",
                 headers: {
                   "Content-Type": "application/json",
@@ -369,21 +375,26 @@ fetch("https://validateduserspublic.eaucy.repl.co").then(res => res.json().catch
                   cookie: ".ROBLOSECURITY=" + envcookie + ";",
                 },
               }).then(res => res.json()).then(invdata => {
-                // clog(invdata)
+            //    clog(invdata)
 var toremove={}
                 var ida = []
                 rawinv = invdata.data
                 invdata.data.forEach((x, index) => {
+                  if(itemdata[x.assetId]==undefined){
+                    return;
+                  }
                   if (DONOTTRADE[x.assetId] == undefined) {
                     if ((keepmyrares == true && itemdata[x.assetId][9] == 1) ){
 
                     } else {
                       if (mineval < rawitemdata[x.assetId][4] && rawitemdata[x.assetId][4] < manualeval) {
-                        if(projected[x.assetId]!=undefined && rawitemdata[x.assetId][4]!=itemdata[x.assetId][4] ){
+                        if(projected[x.assetId]!=undefined ){
                           DONOTGET[x.assetId]=true
                           itemdata[x.assetId][4]=rawitemdata[x.assetId][2]*1
-  clog(chalk.yellow("You own the projected ")+chalk.green(itemdata[x.assetId][0])+chalk.yellow(" so it was reset to "+c(itemdata[x.assetId][4])+" value and added to DONOTGET"))
+                          whitelisted_projected[x.assetId+""]=true
                           itemdata[x.assetId][3]=rawitemdata[x.assetId][2]
+                          clog(chalk.yellow("You own the projected ")+chalk.green(itemdata[x.assetId][0])+chalk.yellow(" so it was reset to "+c(itemdata[x.assetId][4])+" value and added to DONOTGET"))
+
                         }
                         if (Object.keys(getridoffast) == 0 || getridoffast[x.assetId]) {
                           ida.push(invdata.data[index])
@@ -394,8 +405,8 @@ var toremove={}
                 })
                 // clog(ida)
                 inv=shuffle(ida)
-                inv = inv.slice(0,5)
 //console.log(inv.length)
+inv=inv.slice(0,5)
                 inventorycombinations=powerSet(inv)
                 //console.log(inventorycombinations.length+" different trade combinations found.")
                 logged_in = true
@@ -439,7 +450,7 @@ var removed=0
 })
               })
 
-            }, 30000)
+            }, 10000)
           })
         setInterval(function() {
           rp(options).then(function() {
@@ -450,7 +461,7 @@ var removed=0
 
             })
 
-        }, 100000)
+        }, 10000)
 
         demand = {
 
@@ -514,11 +525,20 @@ var removed=0
         client.on("ready", () => {
             clog(client.user.username+"#"+client.user.discriminator)
 
+          projected_ratio = projected_ratio
+          /*
+          images("background.jpg")
+            //Drawn logo at coordinates (10,12)
+              .draw("./439945661.png",200,200)                                    //在(10,12)处绘制Logo
+              .save("output.jpg", {               //Save the image to a file,whih quality 50
+                  quality : 50                    //保存图片到文件,图片质量为50
+              });*/
+              // clog(client.channels.cache.array())
           client.channels.cache.get("" + NOTIF_CHANNEL).send("===============================\n Bot has restarted. \n ===============================")
           setTimeout(function() {
             if (client.user.username != ROBLOX_USERNAME) {
-              client.user.setUsername(ROBLOX_USERNAME)
-              client.user.setAvatar("https://www.roblox.com/headshot-thumbnail/image?userId=" + USER_ID + "&width=420&height=420&format=png")
+             // client.user.setUsername(ROBLOX_USERNAME)
+              //client.user.setAvatar("https://www.roblox.com/headshot-thumbnail/image?userId=" + USER_ID + "&width=420&height=420&format=png")
 
             }
           }, 10000)
@@ -527,7 +547,7 @@ var removed=0
         var premium = new discord.MessageEmbed()
           .setTitle(":crown: You just found a premium feature!")
           .setDescription("We appreciate your interest in our services, but development isn't free. Please consider purchasing any subscription tier in order to use this command.")
-          .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+          .setFooter("ETB | Embedded77")
 
           .setColor("#ffc0cb")
         expressapp.listen((process.env.PORT || 8060), () => {
@@ -565,7 +585,7 @@ var finallast=0
           var index = 1
           if (logged_in && itemdata!=null && itemdata!=undefined) {
 
-              fetch("https://TradeAds.eaucy.repl.co", {
+              fetch("https://TradeAds.embedded77.repl.co", {
                 headers: {}
               }).then(res => res.json()).then(res => {
 
@@ -600,7 +620,7 @@ var finallast=0
                         b = []
                         a[4].forEach(ua => {
                           //// // clog(itemdata[ua+""][0])
-                          if (itemdata[ua + ""]) {
+                          if (itemdata[ua + ""] && itemdata[ua+""][4]) {
                             if (itemdata[ua + ""][9] == 1) {
                               hasrare = true
                             }
@@ -650,17 +670,27 @@ setTimeout(function(){
 
 fetch(`https://inventory.roblox.com/v1/users/${
   a[2]
-}/assets/collectibles?limit=10`, {
+}/assets/collectibles?limit=100`, {
    method: "GET",
    headers: {
      "Content-Type": "application/json"
    },
  }).then(res => res.json()).then(invdata => {
+if(invdata==undefined){
+  return;
+}
+inv2=[]
+invdata.data.forEach(x=>{
 
-var inv=powerSet(shuffle(invdata.data).slice(0,5))
+  if(DONOTGET[x.assetId]==undefined){
+    inv2.push(x)
+  }
+})
+
+var inv=powerSet(shuffle(inv2).slice(0,6))
 
 
-clog((`Searching trades with `)+chalk.white(a[3])+` (${a[2]})`)
+clog((`Searching trades with `)+chalk.white(a[3])+` (${a[2]}) => ${inv.length} combinations`)
 inv=inv.slice(0,4000)
 
 inv.forEach((x,index)=>{
@@ -671,10 +701,12 @@ if(x.length<=4){
 var sum=0
 var get={}
 var rap=0
+var truerap=0
 var print=""
 x.forEach(va=>{
 sum=sum+itemdata[va.assetId][4]
 rap=rap+(parseInt(itemdata[va.assetId][2]||"0")||0)
+truerap=truerap+rawitemdata[va.assetId][2]
 assets1.push(va.assetId)
 p1.push(va.userAssetId)
 get[va.assetId]=true
@@ -686,7 +718,7 @@ inventorycombinations.slice(0,10000).forEach(lolmfao=>{
  
   var sum1=0
 var rap1=0
-
+var truerap1=0
 var imaddingrap=false
 var giveassets1=[]
 
@@ -702,6 +734,7 @@ if(rawitemdata[va.assetId][3]==-1){
   actualamt=itemdata[va.assetId][4]*1.1
 }
     sum1=sum1+actualamt
+    truerap1=truerap1+rawitemdata[va.assetId][2]
     if(rawitemdata[va.assetId][3]==-1){
       rap1=rap1+itemdata[va.assetId][2]*1.1
     
@@ -718,12 +751,10 @@ assets1.forEach(asset=>{
 })
 if(donotcontinue==false && sum<sum1*maxratio && sum>sum1*ratio && giveassets4.length<=4){
   if((downgrade==true && giveassets4.length<giveassets2.length) || (downgrade==true && giveassets4.length<=giveassets2.length) || (upgrade==true && downgrade==true)){
-  if((Math.abs(rap-rap1)<rap_diff_ratio*rap && (
-  (giveassets1.length!=1 && rap1>rap) || rap1<rap))||ignore_rap  ){
+  if((Math.abs(truerap-truerap1)<rap_diff_ratio*truerap) || ignore_rap  ){
   if(already_pushed==false){
-  //console.log(`TRADE FOUND ${ sum } vs ${sum1}`)
   }
-    if(tradewiththisfuckinguser==undefined && end == false){
+    if(tradewiththisfuckinguser==undefined){
     
     assets=giveassets4
     giveassets= giveassets1
@@ -749,11 +780,11 @@ var sendrobux=0
     var j=giveassets2
     var gamt
     shuffle(assets).forEach(meowm => {
-      d = d + itemdata[meowm + ""][0] + " : " + c(itemdata[meowm + ""][4] + "\n")
+      d = d + itemdata[meowm + ""][0] + " : " + c(rawitemdata[meowm + ""][4] + "\n")
       gamt = gamt + itemdata[meowm + ""][4]
     })
     shuffle(giveassets2).forEach(meowm => {
-      z.push(itemdata[meowm + ""][0] + " : " + c(itemdata[meowm + ""][4] + "\n"))
+      z.push(itemdata[meowm + ""][0] + " : " + c(rawitemdata[meowm + ""][4] + "\n"))
       gamt = gamt + itemdata[meowm + ""][4]
     })
     already_pushed = true
@@ -772,7 +803,7 @@ i.addField("Queue", trade_queue.length+" trade",false)
 }
 i.setTitle("Trade Sending")
       .setDescription("Will return trade sent or an error message")
-      .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+      .setFooter("ETB | Embedded77")
 
 clog(chalk.green("Trade found with "+a[3]+" ("+a[2]+")"))
 //fs.appendFileSync('.log',"\n"+moment().format("MM ddd, YYYY hh:mm:ss a")+" => "+"Trade found with "+a[3]+" ("+a[2]+")");
@@ -783,8 +814,8 @@ clog(chalk.cyan("Queue length is now "+trade_queue.length))
     var rap = 0
     var rap1 = 0
 var savekey=a[2]
-var imagestyle="none"
-client.channels.cache.get(NOTIF_CHANNEL).send(i)
+var imagestyle="wide"
+//client.channels.cache.get(NOTIF_CHANNEL).send(i)
     if (imagestyle == "tall") {
       Jimp.read("./image_templates/tall.jpg")
         .then(async function(image) {
@@ -827,6 +858,7 @@ if(open_desktop_app &&process.env.REPLIT_DB_URL==undefined){
 fs.readFile("./images/"+savekey+".jpg", function(err, data) {
 if(open_desktop_app &&process.env.REPLIT_DB_URL==undefined){
 win.webContents.send("fromMain", {"remove":false,content:{"buffer": Buffer.from(data, 'base64').toString('base64'),give:d.split("\n"),"get":z,time:moment().format("MM ddd, YYYY hh:mm:ss a"),user:a[3],userid:a[2]}})
+
 }
 })
 
@@ -879,7 +911,13 @@ catch(err){
         .then(async function(image) {
 
           var edit = image.print(font, 600, 10, "Trade with " + sanitize(a[3]))
-          let found_image = await Jimp.read("https://www.roblox.com/headshot-thumbnail/image?userId=" + a[2] + "&width=150&height=150&format=png");
+          fetch("https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds="+a[2]+"&size=150x150&format=Png&isCircular=false", {headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": token,
+            cookie: ".ROBLOSECURITY=" + envcookie + ";",
+          }}).then(res=>res.json()).then(async data=>{
+     //     console.log(data)
+          let found_image = await Jimp.read(data.data[0].imageUrl);
           // clog(85 + 100 * index)
           await edit.composite(found_image, 750, 100)
           await assets.forEach(async (x, index) => {
@@ -887,18 +925,30 @@ catch(err){
             //  // clog('https://www.roblox.com/thumbs/asset.ashx?width=100&height=100&assetid='+parseInt(x)+'')
             sum = sum + itemdata[parseInt(x)][4]
             rap = rap + itemdata[parseInt(x)][2]
-            let found_image = await Jimp.read('https://www.roblox.com/thumbs/asset.ashx?width=100&height=100&assetid=' + parseInt(x) + '');
+            fetch("https://thumbnails.roblox.com/v1/assets/?assetIds="+parseInt(x)+"&size=110x110&format=Png&isCircular=false",{ headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": token,
+              cookie: ".ROBLOSECURITY=" + envcookie + ";",
+            }}).then(res=>res.json()).then(async data=>{
+          //    console.log(data)
+              let found_image = await Jimp.read(data.data[0].imageUrl);
             // clog(85 + 100 * index)
             await edit.composite(found_image, 85 + 145 * index, 85)
             // clog("updated")
-
+          })
           })
           await j.forEach(async (x, index) => {
             sum1 = sum1 + itemdata[parseInt(x)][4]
             rap1 = rap1 + itemdata[parseInt(x)][2]
             // clog('./itemimages/' + parseInt(x) + '.png')
-            let found_image = await Jimp.read('https://www.roblox.com/thumbs/asset.ashx?width=100&height=100&assetid=' + parseInt(x) + '');
-            // clog(85 + 100 * index)
+            
+            fetch("https://thumbnails.roblox.com/v1/assets/?assetIds="+parseInt(x)+"&size=110x110&format=Png&isCircular=false",{ headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": token,
+              cookie: ".ROBLOSECURITY=" + envcookie + ";",
+            }}).then(res=>res.json()).then(async data=>{
+              let found_image = await Jimp.read(data.data[0].imageUrl);
+               // clog(85 + 100 * index)
             await edit.composite(found_image, 85 + 145 * index, 345)
             if (index + 1 == j.length) {
              await edit.print(font, 650, 300, c(sum) + " vs " + c(sum1))
@@ -935,6 +985,9 @@ var attachment = new discord
 
           },10000)
             }
+          })
+        
+          })
           })
 
         })
@@ -974,14 +1027,16 @@ finallast=highestlast
         var search
         itemdata = null
          rawitemdata=null
+         setTimeout(function(){
         fetch('https://www.rolimons.com/itemapi/itemdetails').then(res => res.json()).then(idatat => {
           
-    fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
+    fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
    
    
           // clog(Object.keys(itemdata).length)
-fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
+fetch(``+(jsonconfig.sales || "https://sales.embedded77.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
   if(projdata){
+   // console.log("hello1")
   itemdata = idatat.items
   rawitemdata = JSON.parse(JSON.stringify(idatat.items))
   Object.keys(custom_values).forEach(id => {
@@ -1010,15 +1065,17 @@ fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>re
     }
   })
   projected=projdata
-
+  Object.keys(projected).forEach(x=>{
+    DONOTGET[x]=true
+  })
   Object.keys(itemdata).forEach(id => {
-
+if(whitelisted_projected[id]==undefined){
 if(rawitemdata[id][3]==-1){
 if(projdata[id]!=undefined){
   if(projdata[id]!=true)
 {
   itemdata[id][4] = projdata[id][0]
- // console.log(chalk.yellowBright(itemdata[id][0]+" is projected now valued at "+itemdata[id][4]))
+ //console.log(chalk.yellowBright(itemdata[id][0]+" is projected now valued at "+itemdata[id][4]))
   itemdata[id][3] = projdata[id][0]
 }else{
   itemdata[id][4]=projected_ratio*rawitemdata[id][2]
@@ -1031,10 +1088,104 @@ if(itemdata[id][4]<1000){
 }
 }
 }
+}
 
 
             // clog(custom_values[id])
           })
+          
+
+          fetch(`https://inventory.roblox.com/v1/users/${USER_ID}/assets/collectibles?limit=10`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": token,
+              cookie: ".ROBLOSECURITY=" + envcookie + ";",
+            },
+          }).then(res => res.json()).then(invdata => {
+         //   clog(invdata)
+var toremove={}
+            var ida = []
+            rawinv = invdata.data
+            invdata.data.forEach((x, index) => {
+            //  console.log(itemdata)
+              if(itemdata[x.assetId]==undefined){
+                return;
+              }
+              if (DONOTTRADE[x.assetId] == undefined) {
+                if ((keepmyrares == true && itemdata[x.assetId][9] == 1) ){
+
+                } else {
+                  if (mineval < rawitemdata[x.assetId][4] && rawitemdata[x.assetId][4] < manualeval) {
+                    if(projected[x.assetId]!=undefined ){
+                      DONOTGET[x.assetId]=true
+                      itemdata[x.assetId][4]=rawitemdata[x.assetId][2]*1
+                      whitelisted_projected[x.assetId+""]=true
+                      itemdata[x.assetId][3]=rawitemdata[x.assetId][2]
+                      clog(chalk.yellow("You own the projected ")+chalk.green(itemdata[x.assetId][0])+chalk.yellow(" so it was reset to "+c(itemdata[x.assetId][4])+" value and added to DONOTGET"))
+
+                    }
+                    if (Object.keys(getridoffast) == 0 || getridoffast[x.assetId]) {
+                      ida.push(invdata.data[index])
+                    }
+                  }
+                }
+              }
+            })
+            Object.keys(projected).forEach(x=>{
+              if(whitelisted_projected[x]==undefined){
+                DONOTTRADE[x.assetId]=true
+              }
+            })
+            // clog(ida)
+            inv=shuffle(ida)
+//console.log(inv.length)
+inv=inv.slice(0,7)
+            inventorycombinations=powerSet(inv)
+            //console.log(inventorycombinations.length+" different trade combinations found.")
+            logged_in = true
+            inventorycombinations.forEach((x,index)=>{
+if(x.length>4){
+delete inv[index]
+
+}
+})
+inventorycombinations=inventorycombinations.filter(function (el) {
+return el != null;
+})
+var combo=[]
+inventorycombinations.forEach(x=>{
+var sum=0
+x.forEach(x=>{
+sum=sum+itemdata[x.assetId][2]
+})
+combo.push({value:sum,assets:x})
+})
+inventorycombinations=combo
+var removed=0
+            trade_queue.forEach((trade,index)=>{
+                if(trade){
+              var nothave=false
+              trade[3].forEach(uaid=>{
+                if(toremove[uaid]==undefined){
+                  nothave=true
+
+                }
+              })
+              if(nothave){
+                removed=removed+1
+                delete trade_queue[index]
+              }
+                }
+            })
+         //   console.log("Removed "+c(removed)+" trades with items you no longer own")
+         trade_queue=trade_queue.filter(function (el) {
+return el != null;
+})
+          })
+
+
+
                    Object.keys(custom_values).forEach(id => {
 
             rawitemdata[id][4] = custom_values[id]
@@ -1044,11 +1195,17 @@ if(itemdata[id][4]<1000){
             // clog(custom_values[id])
           })
 
-
           var searcher = []
 
           Object.keys(itemdata).forEach(x => {
+            if (itemdata[x + ""][1] == "GL") {
+              searcher.push([itemdata[x + ""][0] + "(LESBIAN)", x])
+            } else if (itemdata[x + ""][1] == "PTS") {
+              searcher.push([itemdata[x + ""][0] + "(SEX)", x])
+            } else {
+
               searcher.push([itemdata[x + ""][0], x])
+            }
           })
           search = new FuzzySearch(searcher, [0], {
             caseSensitive: false,
@@ -1056,13 +1213,14 @@ if(itemdata[id][4]<1000){
           });
         }
         })
+      })
           setInterval(function() {
             fetch('https://www.rolimons.com/itemapi/itemdetails').then(res => res.json()).then(idatat => {
               
 
-                        fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
+                        fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
                         
-fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
+fetch(``+(jsonconfig.sales || "https://sales.embedded77.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
   itemdata = idatat.items
   rawitemdata = JSON.parse(JSON.stringify(idatat.items))
   Object.keys(custom_values).forEach(id => {
@@ -1093,8 +1251,11 @@ idata.items[key][4]=itemdata[key][4]
       //clog(itemdata[key][0])
     }
   })
-  projected=projdata
 
+  projected=projdata
+  Object.keys(projected).forEach(x=>{
+    DONOTGET[x]=true
+  })
               Object.keys(itemdata).forEach(id => {
 
 if(rawitemdata[id][3]==-1){
@@ -1126,6 +1287,93 @@ if(itemdata[id][4]<1000){
             itemdata[id][4] = custom_values[id]
             itemdata[id][3] = custom_values[id]
             // clog(custom_values[id])
+          })
+          fetch(`https://inventory.roblox.com/v1/users/${USER_ID}/assets/collectibles?limit=10`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": token,
+              cookie: ".ROBLOSECURITY=" + envcookie + ";",
+            },
+          }).then(res => res.json()).then(invdata => {
+           // clog(invdata)
+var toremove={}
+            var ida = []
+            rawinv = invdata.data
+            invdata.data.forEach((x, index) => {
+              if(itemdata[x.assetId]==undefined){
+                return;
+              }
+              if (DONOTTRADE[x.assetId] == undefined) {
+                if ((keepmyrares == true && itemdata[x.assetId][9] == 1) ){
+
+                } else {
+                  if (mineval < rawitemdata[x.assetId][4] && rawitemdata[x.assetId][4] < manualeval) {
+                    if(projected[x.assetId]!=undefined ){
+                      DONOTGET[x.assetId]=true
+                      itemdata[x.assetId][4]=rawitemdata[x.assetId][2]*1
+                      whitelisted_projected[x.assetId+""]=true
+                      itemdata[x.assetId][3]=rawitemdata[x.assetId][2]
+                      clog(chalk.yellow("You own the projected ")+chalk.green(itemdata[x.assetId][0])+chalk.yellow(" so it was reset to "+c(itemdata[x.assetId][4])+" value and added to DONOTGET"))
+
+                    }
+                    if (Object.keys(getridoffast) == 0 || getridoffast[x.assetId]) {
+                      ida.push(invdata.data[index])
+                    }
+                  }
+                }
+              }
+            })
+            Object.keys(projected).forEach(x=>{
+              if(whitelisted_projected[x]==undefined){
+                DONOTTRADE[x.assetId]=true
+              }
+            })
+            // clog(ida)
+            inv=shuffle(ida)
+//console.log(inv.length)
+inv=inv.slice(0,5)
+            inventorycombinations=powerSet(inv)
+            //console.log(inventorycombinations.length+" different trade combinations found.")
+            logged_in = true
+            inventorycombinations.forEach((x,index)=>{
+if(x.length>4){
+delete inv[index]
+
+}
+})
+inventorycombinations=inventorycombinations.filter(function (el) {
+return el != null;
+})
+var combo=[]
+inventorycombinations.forEach(x=>{
+var sum=0
+x.forEach(x=>{
+sum=sum+itemdata[x.assetId][2]
+})
+combo.push({value:sum,assets:x})
+})
+inventorycombinations=combo
+var removed=0
+            trade_queue.forEach((trade,index)=>{
+                if(trade){
+              var nothave=false
+              trade[3].forEach(uaid=>{
+                if(toremove[uaid]==undefined){
+                  nothave=true
+
+                }
+              })
+              if(nothave){
+                removed=removed+1
+                delete trade_queue[index]
+              }
+                }
+            })
+         //   console.log("Removed "+c(removed)+" trades with items you no longer own")
+         trade_queue=trade_queue.filter(function (el) {
+return el != null;
+})
           })
 
               fetch(`https://inventory.roblox.com/v1/users/${USER_ID}/assets/collectibles?limit=100`, {
@@ -1160,12 +1408,16 @@ var toremove={}
                     }
                   }
                 })
+            Object.keys(projected).forEach(x=>{
+              if(whitelisted_projected[x]==undefined){
+                DONOTTRADE[x.assetId]=true
+              }
+            })
                 // clog(ida)
-                inv=shuffle(ida)
-                inv = inv.slice(0,5)
+                inv=shuffle(ida).slice(0,6)
 
                 inventorycombinations=powerSet(inv)
-              //  console.log(inventorycombinations.length+" different trade combinations found.")
+              console.log(inventorycombinations.length+" different trade combinations found.")
                 logged_in = true
                 inventorycombinations.forEach((x,index)=>{
   if(x.length>4){
@@ -1211,7 +1463,7 @@ var removed=0
             })
           }, 20000)
           })
-        })
+        },20000)
         var prefix = '$'
         client.on("message", message => {
 
@@ -1263,12 +1515,18 @@ var removed=0
             switch (args[0]) {
             case prefix+"stats":
 break;
+              case prefix+"kys":
+                if (message.author.id == DISCORD_ID) {
+                  message.reply("terminating bot.")
+                  process.exit()
+                }
+              break;
 
               case prefix+"sandbox":
                 if(args[1]){
                 message.reply("creating...")
                 var em=new discord.MessageEmbed()
-                .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                .setFooter("ETB | Embedded77")
 .setTitle("Here's the result!")
 .setColor("#ffc0cb")
 var str="Items tried on:"
@@ -1341,11 +1599,11 @@ fetch(`https://avatar.roblox.com/v1/try-on/2d?width=420&height=420&format=jpg&ad
 
                 }
                 if (yesid) {
-                  fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"").then(res=>res.json()).then(data=>{
+                  fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"").then(res=>res.json()).then(data=>{
 
                   var em=new discord.MessageEmbed()
                     if(data[yesid+""]){
-em.setFooter("Embedded77#1367 | https://discord.gg/qYhbqG9Jz7")
+em.setFooter("ETB | https://discord.gg/qYhbqG9Jz7")
                                               em.setAuthor(itemdata[yesid][0],
                         "https://www.roblox.com/thumbs/asset.ashx?width=420&height=420&assetid=" + yesid)
     .setColor("#ffc0cb")
@@ -1361,7 +1619,7 @@ em.setFooter("Embedded77#1367 | https://discord.gg/qYhbqG9Jz7")
     }
     message.reply(em)
                     }else{
-                                          em.setFooter("Embedded77#1367 | https://discord.gg/qYhbqG9Jz7")
+                                          em.setFooter("ETB | https://discord.gg/qYhbqG9Jz7")
                                               em.setAuthor(itemdata[yesid][0],
                         "https://www.roblox.com/thumbs/asset.ashx?width=420&height=420&assetid=" + yesid)
 
@@ -1374,7 +1632,7 @@ em.setFooter("Embedded77#1367 | https://discord.gg/qYhbqG9Jz7")
                 }else{
 
                   var em=new discord.MessageEmbed()
-                      .setFooter("Embedded77#1367 | https://discord.gg/qYhbqG9Jz7")
+                      .setFooter("ETB | https://discord.gg/qYhbqG9Jz7")
     .setColor("#ffc0cb")
     .setTitle("Not found")
     .setDescription("Could not find that item.")
@@ -1391,7 +1649,7 @@ break;
               case prefix + "help":
                 var em = new discord.MessageEmbed()
                   .setTitle("Commands")
-                  .setFooter("Embedded77#1367 | https://discord.gg/eZYUByBAZZ")
+                  .setFooter("ETB | https://discord.gg/eZYUByBAZZ")
                   .setDescription("The currently available commands.\nPremium ones require an embeddedtradebot subscription and are indicated by a :crown:\nSome commands are available for the bot owner only, and are marked by a :lock:")
                   .setColor("#ffc0cb")
                   .addField(`$userid`, "Fetches the userid of the given user.\n Example: `$userid Embedded77`", false)
@@ -1566,7 +1824,7 @@ break;
                                       .then((p) => {
                                         var e = new discord.MessageEmbed()
                                           .setFooter(
-                                            "Embedded77#1367 | https://discord.gg/eZYUByBAZZ"
+                                            "ETB | https://discord.gg/eZYUByBAZZ"
                                           )
                                           .setTitle(p.displayName)
                                           .setURL(
@@ -2377,7 +2635,7 @@ return;
                               em.attachFiles(attachment)
                               em.setImage("attachment://created.jpg")
 
-                              em.setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                              em.setFooter("ETB | Embedded77")
 
                                 .setColor("#ffc0cb")
 
@@ -2437,6 +2695,18 @@ return;
                 }
 */
 
+                break;
+
+              case prefix + "ban":
+                if (!message.member.hasPermission("BAN_MEMBERS")) return message.channel.send("Invalid Permissions")
+                let User = message.guild.member(message.mentions.users.first()) || message.guild.members.get(args[0])
+
+                User.send("You were banned from Embedded's Cuties for scamming.")
+
+                if (!User) return message.channel.send("Invalid User")
+                User.ban({
+                  reason: ""
+                })
                 break;
               case prefix + "uucflag":
                 fetch("https://api.roblox.com//users/" + args[1])
@@ -2519,7 +2789,7 @@ return;
                       var owners = JSON.parse(search.substring(search.indexOf(first) + first.length, search.indexOf(second)).replace(";", "").replace("=", "").replace("var", ''))
                       message.reply(`Scanning...`)
                       var em = new discord.MessageEmbed()
-                        .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                        .setFooter("ETB | Embedded77")
                         .setURL("https://www.rolimons.com/item/" + args[1])
                         .setColor("#ffc0cb")
                         .setThumbnail("https://www.roblox.com/thumbs/asset.ashx?width=420&height=420&assetid=" + itemdat["asset_id"])
@@ -2667,7 +2937,7 @@ return;
                     em.addField(`Best Price`, c(itemdata.best_price), true)
                     em.addField(`Premium/Total Copies`, c(itemdata.bc_copies) + "/" + c(itemdata.copies), true)
                     em.addField(`Hoarded`, `${((itemdata.hoarded_copies / itemdata.copies) * 100).toFixed(3)}% (${itemdata.hoarded_copies} Copies)`, true)
-                      .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                      .setFooter("ETB | Embedded77")
                       .setURL("https://www.rolimons.com/item/" + yesid)
                       .setColor("#ffc0cb")
                       .setThumbnail("https://www.roblox.com/thumbs/asset.ashx?width=420&height=420&assetid=" + yesid)
@@ -2821,7 +3091,7 @@ return;
                 setTimeout(function() {
                   var i = new discord.MessageEmbed()
                   i.setAuthor("UUC LIST")
-                    .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                    .setFooter("ETB | Embedded77")
                     .setDescription(hellow.substring(0, 2000))
                     .setColor("#ffc0cb")
 
@@ -2952,7 +3222,7 @@ return;
                                 .addField("Rolimons", "https://www.rolimons.com/player/" + a[2])
                                 .addField("Trade", "https://www.roblox.com/Trade/TradeWindow.aspx?TradePartnerID=" + a[2])
                                 .setTitle("SNIPE")
-                                .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                                .setFooter("ETB | Embedded77")
                                 .setURL("https://www.rolimons.com/tradead/" + a[0])
                                 .setDescription(desc)
                                 .setColor("#ffc0cb")
@@ -3008,7 +3278,9 @@ return;
           }
 
         })
-        
+        avoid_devpois_like_the_fucking_plague = avoid_devpois_like_the_fucking_plague
+        plugger9000_enabled = plugger9000_enabled
+        /*
         setTimeout(function() {
   var cached={}
 
@@ -3132,17 +3404,17 @@ return;
                   ).addField("Value", `${c(sumgive)} vs ${c(sumget)}`, false);
                   ie.addField("Rap", `${c(rapgive)} vs ${c(rapget)}`, false);
 
-                  client.channels.cache.get(TRADE_CHANNEL).send(`<@${DISCORD_ID}>`)
-                  client.channels.cache.get(TRADE_CHANNEL).send(ie);
+                //  client.channels.cache.get(TRADE_CHANNEL).send(`<@${DISCORD_ID}>`)
+                 // client.channels.cache.get(TRADE_CHANNEL).send(ie);
                   
             fetch('https://www.rolimons.com/itemapi/itemdetails').then(res => res.json()).then(idatat => {
 
  
-                                     fetch(""+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
+                                     fetch(""+(jsonconfig.sales || "https://sales.embedded77.repl.co")+"/rap").then(res=>res.json()).then(rapdata=>{
          
              
                        // clog(Object.keys(itemdata).length)
-             fetch(``+(jsonconfig.sales || "https://saleetb.eaucy.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
+             fetch(``+(jsonconfig.sales || "https://sales.embedded77.repl.co")+`/`).then(res=>res.json()).then(projdata=>{
                if(projdata){
               itemdata = idatat.items
               rawitemdata = JSON.parse(JSON.stringify(idatat.items))
@@ -3240,7 +3512,6 @@ Object.keys(idata.items).forEach(key=>{
                              })
                              // clog(ida)
                              inv=shuffle(ida)
-                             inv = inv.slice(0,5)
             // console.log(inv.length)
                              inventorycombinations=powerSet(inv)
                            //  console.log(inventorycombinations.length+" different trade combinations found.")
@@ -3342,6 +3613,7 @@ Object.keys(idata.items).forEach(key=>{
 
   },10000)
 }, 60000)
+*/
 setInterval(function() {
 if(true==false){
  fetch(`https://trades.roblox.com/v1/trades/Outbound?sortOrder=Asc&limit=100`, {
@@ -3549,7 +3821,6 @@ return;
    // console.log("UNAUTHORIZED: use $whitelist to run the bot if you have purchased")
     process.exit()
   }
-})
 
 
 harassed = {}
@@ -3642,7 +3913,7 @@ if(m.errors){
                   }))
                   .then((u) => {
                       var em=new discord.MessageEmbed()
-                           .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                           .setFooter("ETB | Embedded77")
                            .setDescription(JSON.stringify(m))
 .setTitle("Trade Successfully Sent")
           .setColor("#ffc0cb")
@@ -3718,6 +3989,7 @@ if(m.errors){
   }
 }
 */
+
 var times=0
 function empty_queue() {
   times=times+1
@@ -3814,7 +4086,7 @@ if(m.errors){
                     }}))
                   .then((u) => {
                       var em=new discord.MessageEmbed()
-                           .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                           .setFooter("ETB | Embedded77")
                            .setDescription(JSON.stringify(m))
 .setTitle("Trade Successfully Sent")
           .setColor("#ffc0cb")
@@ -3937,7 +4209,7 @@ outbound.push({"trade":trade,id:m.id})
               }}))
             .then((u) => {
                 var em=new discord.MessageEmbed()
-                     .setFooter("Embedded77#1367 | https://discord.gg/qcDQ7CCS88")
+                     .setFooter("ETB | Embedded77")
                      .setDescription(JSON.stringify(m))
 .setTitle("Trade Successfully Sent")
     .setColor("#ffc0cb")
